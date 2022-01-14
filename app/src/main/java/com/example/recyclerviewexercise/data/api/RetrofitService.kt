@@ -1,9 +1,7 @@
 package com.example.recyclerviewexercise.data.api
 
-import com.example.recyclerviewexercise.data.model.QuoteList
-import com.google.gson.GsonBuilder
+import com.example.recyclerviewexercise.data.model.MainActivityResponse
 import retrofit2.Call
-import retrofit2.Response
 import retrofit2.Retrofit
 import retrofit2.converter.gson.GsonConverterFactory
 import retrofit2.http.GET
@@ -11,11 +9,11 @@ import retrofit2.http.GET
 interface RetrofitService {
 
     @GET("/quotes")
-    fun getQuotes() : Call<QuoteList>
+    fun getQuotes() : Call<MainActivityResponse>
 
     companion object {
 
-        private const val baseUrl = "http://api.quotable.io"
+        private const val baseUrl = "https://customquote.free.beeceptor.com"
         var retrofitService: RetrofitService? = null
 
         fun getInstance(): RetrofitService {

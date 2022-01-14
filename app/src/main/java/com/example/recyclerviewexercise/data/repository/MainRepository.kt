@@ -1,11 +1,8 @@
 package com.example.recyclerviewexercise.data.repository
 
-import com.example.recyclerviewexercise.data.api.RetrofitService
-import com.example.recyclerviewexercise.data.model.QuoteList
-import retrofit2.Response
+import com.example.recyclerviewexercise.data.api.ApiHelper
+import javax.inject.Inject
 
-class MainRepository(private val retrofitService: RetrofitService) {
-
-    fun getQuotes() = retrofitService.getQuotes()
-
+class MainRepository @Inject constructor(private val apiHelper: ApiHelper) {
+    suspend fun getQuotes() = apiHelper.getQuotes()
 }

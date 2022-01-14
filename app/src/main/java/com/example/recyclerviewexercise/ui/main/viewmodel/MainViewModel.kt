@@ -1,34 +1,42 @@
 package com.example.recyclerviewexercise.ui.main.viewmodel
 
-import android.util.Log
+import androidx.lifecycle.LiveData
 import androidx.lifecycle.MutableLiveData
 import androidx.lifecycle.ViewModel
-import com.example.recyclerviewexercise.data.model.QuoteList
+import androidx.lifecycle.viewModelScope
+import com.example.recyclerviewexercise.data.model.MainActivityResponse
 import com.example.recyclerviewexercise.data.repository.MainRepository
-import retrofit2.Call
-import retrofit2.Callback
-import retrofit2.Response
+import com.example.recyclerviewexercise.utils.NetworkHelper
+import com.example.recyclerviewexercise.utils.Resource
+import dagger.hilt.android.lifecycle.HiltViewModel
+import kotlinx.coroutines.launch
+import javax.inject.Inject
 
-class MainViewModel(private val mainRepository: MainRepository): ViewModel() {
+@HiltViewModel
+class MainViewModel @Inject constructor(
+    private val mainRepository: MainRepository,
+    private val networkHelper: NetworkHelper
+) : ViewModel() {
 
-    private val TAG = "MainViewModel"
-    val quoteList = MutableLiveData<QuoteList>()
-    val errorMessage = MutableLiveData<String>()
+    private val _quotes = MutableLiveData<Resource<MainActivityResponse>>()
+    val quotes: LiveData<Resource<MainActivityResponse>>
+        get() = _quotes
 
-    fun loadQuoteData() {
-        Log.d(TAG, "loadQuoteData: Called")
-        val response = mainRepository.getQuotes()
-        response.enqueue(object: Callback<QuoteList> {
-            override fun onResponse(call: Call<QuoteList>, response: Response<QuoteList>) {
-                Log.d(TAG, "loadQuoteData: ${response.body()}")
-                quoteList.postValue(response.body())
-            }
+    init {
+        fetchQuotes()
+    }
 
-            override fun onFailure(call: Call<QuoteList>, t: Throwable) {
-                Log.d(TAG, "loadQuoteData: ${t.message}")
-                errorMessage.postValue(t.message)
-            }
-        })
+    private fun fetchQuotes() {
+        viewModelScope.launch {
+            _quotes.postValue(Resource.loading(null))
+            if (networkHelper.isNetworkConnected()) {
+                mainRepository.getQuotes().let {
+                    if (it.isSuccessful) {
+                        _quotes.postValue(Resource.success(it.body()))
+                    } else _quotes.postValue(Resource.error(it.errorBody().toString(), null))
+                }
+            } else _quotes.postValue(Resource.error("No internet connection", null))
+        }
     }
 
 }
